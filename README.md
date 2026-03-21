@@ -1,11 +1,16 @@
 # deep learning in fortran
 
-just playing around with fortran. just gunna do mnist nothing fancy.
+just playing around with fortran. just mnist nothing fancy.
 
 download datasets from [here](https://github.com/phoebetronic/mnist).
 
 ## features
 
-- [ ] read images and one hot outputs from train or test into a 3d tensor, (batch size, 28, 28)
-- [ ] layers + backward: linear, batchnorm, sigmoid, softmax, mse
-- [ ] sgd
+- [x] read train + test mnist images from csv
+- [ ] layers + backward:
+    - [x] relu
+    - [ ] linear
+    - [ ] softmax (stable)
+    - [ ] mse
+- [ ] do training, track loss
+- [ ] do testing, show performance

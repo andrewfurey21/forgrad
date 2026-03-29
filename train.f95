@@ -119,8 +119,8 @@ contains
         end subroutine
 
         subroutine init_weights(weights, rows, cols)
-                real(f32), intent(out) :: weights(rows, cols)
                 integer, intent(in) :: rows, cols
+                real(f32), intent(out) :: weights(rows, cols)
 
                 integer :: i, j
                 real(f32) :: n
@@ -136,8 +136,8 @@ contains
         end subroutine
 
         subroutine init_grads(grads, rows, cols)
-                real(f32), intent(out) :: grads(rows, cols)
                 integer, intent(in) :: rows, cols
+                real(f32), intent(out) :: grads(rows, cols)
                 grads = 0
         end subroutine
 
@@ -232,12 +232,12 @@ contains
 
 end module forgrad
 
-program train
+program train_mnist
         use forgrad
         implicit none(type, external)
 
         integer, parameter :: img_size = 28 * 28
-        integer, parameter :: batch_size = 128
+        integer, parameter :: batch_size = 16
         integer, parameter :: num_epochs = 10
 
 
@@ -252,7 +252,7 @@ program train
         real(f32), dimension(batch_size, 10) :: batch_one_hot_answers
         integer, dimension(batch_size) :: batch_indices
 
-        integer :: epoch, batch
+        integer :: epoch, batch, batch_start, batch_end
 
         ! model
         real(f32), dimension(img_size, 128) :: layer_1
@@ -301,10 +301,16 @@ program train
         do epoch = 1, num_epochs
                 print *, "Epoch ", epoch
                 call generate_random_indices(num_train_images, training_indices)
-                do batch = 1, num_train_images - batch_size - 1, batch_size
-                ! do batch = 1, 10, batch_size
-                        batch_indices = training_indices(batch:(batch + batch_size - 1))
-                        batch_answers = training_answers(batch_indices(1:batch))
+                do batch = batch_size, num_train_images - batch_size - 1, batch_size
+                        batch_start = batch - batch_size + 1
+                        batch_end = batch
+
+                        print *, batch_start
+                        print *, batch_end
+
+                        batch_indices = training_indices(batch_start:batch_end)
+                        batch_answers = training_answers(batch_indices(batch_start:batch_end))
+
                         batch_one_hot_answers = one_hot_encoding(batch_answers, batch_size, 10)
                         batch_images = training_images(batch_indices, :)
 
@@ -315,17 +321,14 @@ program train
                         call relu_forwards(layer_2_outputs, layer_2_act)
 
                         call linear_forwards(layer_2_outputs, layer_3, layer_3_outputs)
-                        ! call identity_forwards(layer_3_outputs, layer_3_act)
                         call sigmoid_forwards(layer_3_outputs, layer_3_act)
 
                         call mse_forwards(layer_3_act, batch_one_hot_answers, batch_size, loss)
 
-                        ! print *, "Loss: ", loss
                         total_loss = total_loss + loss
 
                         call mse_backwards(layer_3_act, batch_one_hot_answers, batch_size, dlossdlayer3act)
 
-                        ! call identity_backwards(dlossdlayer3act, dlossdlayer3)
                         call sigmoid_backwards(dlossdlayer3act, dlossdlayer3)
                         call linear_backwards(dlossdlayer3, layer_3, dlossdlayer2act)
 
@@ -346,4 +349,4 @@ program train
                 print *, "Loss: ", total_loss / (num_train_images / batch_size)
                 total_loss = 0
         end do
-end program train
+end program train_mnist
